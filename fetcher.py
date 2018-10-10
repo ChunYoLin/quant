@@ -18,7 +18,3 @@ class Fetcher:
         data = pd.concat([data, recent_data], axis=0, sort=False)
         data.index = pd.to_datetime(data.index)
         return data.sort_index()
-
-fetcher = Fetcher()
-data = fetcher.fetch("AMD", "2000-01-01")
-print(data)
