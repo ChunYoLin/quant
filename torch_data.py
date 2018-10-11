@@ -31,3 +31,9 @@ class StockDataset(data.Dataset):
         for idx in range(len(data) - data_len):
             data_y[idx] = data[idx + data_len, 3]
         return data_x, data_y
+
+    def get_test_datas(self):
+        data = self.data_df.values
+        data_len = self.data_len
+        data_x = np.array(list(chunks(data, data_len))[-1])
+        return data_x
