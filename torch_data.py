@@ -18,7 +18,7 @@ class StockDataset(data.Dataset):
         self.data_x, self.data_y = self.get_train_datas()
 
     def __getitem__(self, idx):
-        return self.data_x, self.data_y
+        return self.data_x[idx], self.data_y[idx]
 
     def __len__(self):
         return len(self.data_x)
