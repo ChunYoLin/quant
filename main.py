@@ -9,10 +9,10 @@ from models import SimpleModel
 
 def main():
     dataset = StockDataset("AMD", "1993-01-01", data_len = 20)
-    dataloader = data.DataLoader(dataset, batch_size=64, shuffle=True)
+    dataloader = data.DataLoader(dataset, batch_size=32, shuffle=True)
 
     net = SimpleModel().cuda()
-    optimizer = optim.Adam(net.parameters(), lr=0.0001)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
     criterion = nn.MSELoss()
     for epoch in range(100000):
         losses = 0.
