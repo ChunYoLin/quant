@@ -3,13 +3,15 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils import data
 
-from torch_data import StockDataset
+from torch_data import StockDataset, MultiStockDataset
 from models import SimpleModel
 
 
 def main():
     dataset = StockDataset("AMD", "1993-01-01", data_len = 20)
-    dataloader = data.DataLoader(dataset, batch_size=32, shuffle=True)
+    stock_list = ["AMD", "AAPL", "NVDA"]
+    datasets = MultiStockDataset(stock_list, "1993-01-01", data_len = 20)
+    dataloader = data.DataLoader(datasets, batch_size=32, shuffle=True)
 
     net = SimpleModel().cuda()
     optimizer = optim.Adam(net.parameters(), lr=0.001)
