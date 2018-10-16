@@ -43,23 +43,20 @@ class StockPriceRegression():
 
     def get_train_datas(self):
         data = self.__data_df.values
-        data_len = self.data_len
-        data_x = np.array(list(chunks(data, data_len))[:-1])
+        data_x = np.array(list(chunks(data, self.data_len))[:-1])
         return data_x
 
     def get_train_targets(self):
         data = self.__data_df.values
-        data_len = self.data_len
         data_y = []
-        for idx in range(len(data) - data_len):
-            data_y.append(data[idx + data_len, 3])
+        for idx in range(len(data) - self.data_len):
+            data_y.append(data[idx + self.data_len, 3])
         data_y = np.asarray(data_y)
         return data_y
 
     def get_test_datas(self):
         data = self.__data_df.values
-        data_len = self.data_len
-        data_x = np.array(list(chunks(data, data_len))[-1])
+        data_x = np.array(list(chunks(data, self.data_len))[-1])
         return data_x
 
     def get_raw_datas(self):
