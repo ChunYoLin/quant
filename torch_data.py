@@ -20,7 +20,8 @@ class StockDataset(data.Dataset):
         self.data_x = None
         self.data_y = None
         for stock_dataset in self.datasets:
-            data_x, data_y = stock_dataset.get_train_datas()
+            data_x = stock_dataset.get_train_datas()
+            data_y = stock_dataset.get_train_targets()
             if self.data_x is None:
                 self.data_x, self.data_y = data_x, data_y
             else:
@@ -37,21 +38,33 @@ class StockDataset(data.Dataset):
 class StockPriceRegression():
     def __init__(self, symbol, start, end=date.today(), data_len=5):
         usecols = ["open", "high", "low", "close", "volume"]
-        self.data_df = Fetcher().fetch(symbol, start, end)[usecols]
+        self.__data_df = Fetcher().fetch(symbol, start, end)[usecols]
         self.data_len = data_len
-        self.data_x, self.data_y = self.get_train_datas()
 
     def get_train_datas(self):
-        data = self.data_df.values
+        data = self.__data_df.values
         data_len = self.data_len
         data_x = np.array(list(chunks(data, data_len))[:-1])
-        data_y = np.zeros([data_x.shape[0], 1])
+        return data_x
+
+    def get_train_targets(self):
+        data = self.__data_df.values
+        data_len = self.data_len
+        data_y = []
         for idx in range(len(data) - data_len):
-            data_y[idx] = data[idx + data_len, 3]
-        return data_x, data_y
+            data_y.append(data[idx + data_len, 3])
+        data_y = np.asarray(data_y)
+        return data_y
 
     def get_test_datas(self):
-        data = self.data_df.values
+        data = self.__data_df.values
         data_len = self.data_len
         data_x = np.array(list(chunks(data, data_len))[-1])
         return data_x
+
+    def get_raw_datas(self):
+        return self.__data_df.values
+
+class StockPriceChange():
+    def __init__(self, symbol, start, end=date.today(), data_len=5):
+        pass
