@@ -33,9 +33,9 @@ class StockDataset(data.Dataset):
 
     def __len__(self):
         return len(self.data_x)
-        
 
-class StockPriceRegression():
+class StockPriceData():
+
     def __init__(self, symbol, start, end=date.today(), data_len=5):
         usecols = ["open", "high", "low", "close", "volume"]
         self.__data_df = Fetcher().fetch(symbol, start, end)[usecols]
@@ -47,12 +47,7 @@ class StockPriceRegression():
         return data_x
 
     def get_train_targets(self):
-        data = self.__data_df.values
-        data_y = []
-        for idx in range(len(data) - self.data_len):
-            data_y.append(data[idx + self.data_len, 3])
-        data_y = np.asarray(data_y)
-        return data_y
+        pass
 
     def get_test_datas(self):
         data = self.__data_df.values
@@ -61,6 +56,19 @@ class StockPriceRegression():
 
     def get_raw_datas(self):
         return self.__data_df.values
+
+class StockPriceRegression(StockPriceData):
+
+    def __init__(self, symbol, start, end=date.today(), data_len=5):
+        super().__init__(symbol, start, end, data_len)
+
+    def get_train_targets(self):
+        data = self.get_raw_datas()
+        data_y = []
+        for idx in range(len(data) - self.data_len):
+            data_y.append(data[idx + self.data_len, 3])
+        data_y = np.asarray(data_y)
+        return data_y
 
 class StockPriceChange():
     def __init__(self, symbol, start, end=date.today(), data_len=5):

@@ -1,16 +1,15 @@
 import unittest
 
 from fetcher import Fetcher
-from torch_data import StockPriceRegression, StockPriceChange
+from torch_data import StockPriceData, StockPriceRegression, StockPriceChange
 
-class TestStockPriceRegression(unittest.TestCase):
-
+class TestStockPriceData(unittest.TestCase):
     def test_ctor(self):
-        amd_dataset = StockPriceRegression("AMD", "1993-01-01", "1994-01-05", data_len = 5)
+        amd_dataset = StockPriceData("AMD", "1993-01-01", "1994-01-05", data_len = 5)
 
     def test_GetTrainDatas_LenOfOneXdataIsSameAsDataLen(self):
         data_len = 5
-        amd_dataset = StockPriceRegression("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
+        amd_dataset = StockPriceData("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
 
         data_x = amd_dataset.get_train_datas()
 
@@ -18,7 +17,7 @@ class TestStockPriceRegression(unittest.TestCase):
 
     def test_GetTrainDatas_XDataIsSliceOfRawData(self):
         data_len = 5
-        amd_dataset = StockPriceRegression("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
+        amd_dataset = StockPriceData("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
         data = amd_dataset.get_raw_datas()
 
         data_x = amd_dataset.get_train_datas()
@@ -27,6 +26,12 @@ class TestStockPriceRegression(unittest.TestCase):
         test_data_idx = 3
         self.assertEqual(data_x[test_slice_idx, test_data_idx, 3], data[test_slice_idx+test_data_idx, 3])
     
+
+class TestStockPriceRegression(unittest.TestCase):
+
+    def test_ctor(self):
+        amd_dataset = StockPriceRegression("AMD", "1993-01-01", "1994-01-05", data_len = 5)
+
     def test_GetTrainTargets_YdataIsPreviousClosePrice(self):
         data_len = 5
         amd_dataset = StockPriceRegression("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
