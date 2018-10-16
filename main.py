@@ -3,14 +3,14 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils import data
 
-from torch_data import StockDataset, MultiStockDataset
+from torch_data import StockPriceRegression, StockDataset
 from models import SimpleModel
 
 
 def main():
-    dataset = StockDataset("AMD", "1993-01-01", data_len = 20)
-    stock_list = ["AMD", "AAPL", "NVDA"]
-    datasets = MultiStockDataset(stock_list, "1993-01-01", data_len = 20)
+    dataset = StockPriceRegression("AMD", "1993-01-01", data_len = 20)
+    stock_list = ["AMD", "AAPL", "NVDA", "GOOG", "CDNS", "QCOM", "INTC", "MU"]
+    datasets = StockDataset(stock_list, "1993-01-01", data_len = 20)
     dataloader = data.DataLoader(datasets, batch_size=32, shuffle=True)
 
     net = SimpleModel().cuda()
@@ -27,7 +27,7 @@ def main():
             loss.backward()
             losses += loss
             optimizer.step()
-        print(f"epoch: {epoch}, losses: {losses/64.}")
+        print(f"epoch: {epoch}, losses: {losses/32.}")
         test_data = torch.Tensor(dataset.get_test_datas()).cuda()
         test_data = test_data.transpose(0, 1)
         test_data = test_data.view(1, test_data.shape[0], test_data.shape[1])

@@ -10,12 +10,12 @@ def chunks(data, data_len):
     for idx in range(len(data) - data_len + 1):
         yield data[idx:idx+data_len]
 
-class MultiStockDataset(data.Dataset):
+class StockDataset(data.Dataset):
     def __init__(self, symbols, start, end=date.today(), data_len=5):
         assert isinstance(symbols, list)
         self.datasets = []
         for s in symbols:
-            stock_dataset = StockDataset(s, start, end, data_len)
+            stock_dataset = StockPriceRegression(s, start, end, data_len)
             self.datasets.append(stock_dataset)
         self.data_x = None
         self.data_y = None
@@ -34,18 +34,12 @@ class MultiStockDataset(data.Dataset):
         return len(self.data_x)
         
 
-class StockDataset(data.Dataset):
+class StockPriceRegression():
     def __init__(self, symbol, start, end=date.today(), data_len=5):
         usecols = ["open", "high", "low", "close", "volume"]
         self.data_df = Fetcher().fetch(symbol, start, end)[usecols]
         self.data_len = data_len
         self.data_x, self.data_y = self.get_train_datas()
-
-    def __getitem__(self, idx):
-        return self.data_x[idx], self.data_y[idx]
-
-    def __len__(self):
-        return len(self.data_x)
 
     def get_train_datas(self):
         data = self.data_df.values
