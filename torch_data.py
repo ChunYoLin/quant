@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 
-from torch.utils import data
 import numpy as np
+from torch.utils import data
 
 from fetcher import Fetcher
 
@@ -70,6 +70,15 @@ class StockPriceRegression(StockPriceData):
         data_y = np.asarray(data_y)
         return data_y
 
-class StockPriceChange():
+class StockPriceChange(StockPriceData):
     def __init__(self, symbol, start, end=date.today(), data_len=5):
-        pass
+        super().__init__(symbol, start, end, data_len)
+
+    def get_train_targets(self):
+        data = self.get_raw_datas()
+        data_y = []
+        for idx in range(len(data) - self.data_len):
+            change = (data[idx + self.data_len, 3] - data[idx + self.data_len - 1, 3]) / data[idx + self.data_len - 1, 3]
+            data_y.append(change)
+        data_y = np.asarray(data_y)
+        return data_y

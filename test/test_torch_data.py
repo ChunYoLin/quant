@@ -55,3 +55,22 @@ class TestStockPriceChange(unittest.TestCase):
 
     def test_ctor(self):
         amd_dataset = StockPriceChange("AMD", "1993-01-01", "1994-01-05", data_len = 5)
+
+    def test_GetTrainTargets_YdataIsChangeOfClosePrice(self):
+        data_len = 5
+        amd_dataset = StockPriceChange("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
+        data = amd_dataset.get_raw_datas()
+
+        data_y = amd_dataset.get_train_targets()
+
+        change = (data[data_len, 3] - data[data_len-1, 3]) / data[data_len-1, 3]
+        self.assertEqual(change, data_y[0])
+
+    def test_GetTrainDatasTargets_XdataLenIsSameAsYdataLen(self):
+        data_len = 5
+        amd_dataset = StockPriceChange("AMD", "1993-01-01", "1994-01-05", data_len = data_len)
+
+        data_x = amd_dataset.get_train_datas()
+        data_y = amd_dataset.get_train_targets()
+
+        self.assertEqual(len(data_x), len(data_y))
