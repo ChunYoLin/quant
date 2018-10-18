@@ -2,13 +2,10 @@ from datetime import date, datetime, timedelta
 
 import numpy as np
 from torch.utils import data
+from sklearn.preprocessing import MinMaxScaler
 
 from fetcher import Fetcher
 
-
-def chunks(data, data_len):
-    for idx in range(len(data) - data_len + 1):
-        yield data[idx:idx+data_len]
 
 class StockDataset(data.Dataset):
     def __init__(self, symbols, start, end=date.today(), data_len=5):
@@ -34,15 +31,34 @@ class StockDataset(data.Dataset):
     def __len__(self):
         return len(self.data_x)
 
+
+def chunks(data, data_len):
+    for idx in range(len(data) - data_len + 1):
+        yield data[idx:idx+data_len]
+
 class StockPriceData():
 
     def __init__(self, symbol, start, end=date.today(), data_len=5):
         usecols = ["open", "high", "low", "close", "volume"]
         self.__data_df = Fetcher().fetch(symbol, start, end)[usecols]
+        self.__data_df_norm = self.__data_df.copy()
+        self.__data_df_norm['open'] = MinMaxScaler().fit_transform(self.__data_df.open.values.reshape(-1, 1))
+        self.__data_df_norm['high'] = MinMaxScaler().fit_transform(self.__data_df.high.values.reshape(-1, 1))
+        self.__data_df_norm['low'] = MinMaxScaler().fit_transform(self.__data_df.low.values.reshape(-1, 1))
+        self.__data_df_norm['close'] = MinMaxScaler().fit_transform(self.__data_df.close.values.reshape(-1, 1))
+        self.__data_df_norm['volume'] = MinMaxScaler().fit_transform(self.__data_df.volume.values.reshape(-1, 1))
         self.data_len = data_len
 
+    def denormalize(self, norm_value):
+        origin_values = self.__data_df["close"].values.reshape(-1, 1)
+        norm_value = norm_value.reshape(-1, 1)
+        min_max_scaler = MinMaxScaler()
+        min_max_scaler.fit_transform(origin_values)
+        denorm_value = min_max_scaler.inverse_transform(norm_value)
+        return denorm_value
+
     def get_train_datas(self):
-        data = self.__data_df.values
+        data = self.__data_df_norm.values
         data_x = np.array(list(chunks(data, self.data_len))[:-1])
         return data_x
 
@@ -50,12 +66,16 @@ class StockPriceData():
         pass
 
     def get_test_datas(self):
-        data = self.__data_df.values
+        data = self.__data_df_norm.values
         data_x = np.array(list(chunks(data, self.data_len))[-1])
         return data_x
 
     def get_raw_datas(self):
         return self.__data_df.values
+
+    def get_norm_datas(self):
+        return self.__data_df_norm.values
+
 
 class StockPriceRegression(StockPriceData):
 
@@ -63,22 +83,23 @@ class StockPriceRegression(StockPriceData):
         super().__init__(symbol, start, end, data_len)
 
     def get_train_targets(self):
-        data = self.get_raw_datas()
+        data = self.get_norm_datas()
         data_y = []
         for idx in range(len(data) - self.data_len):
             data_y.append(data[idx + self.data_len, 3])
-        data_y = np.asarray(data_y)
+        data_y = np.asarray(data_y).reshape(-1, 1)
         return data_y
+
 
 class StockPriceChange(StockPriceData):
     def __init__(self, symbol, start, end=date.today(), data_len=5):
         super().__init__(symbol, start, end, data_len)
 
     def get_train_targets(self):
-        data = self.get_raw_datas()
+        data = self.get_norm_datas()
         data_y = []
         for idx in range(len(data) - self.data_len):
             change = (data[idx + self.data_len, 3] - data[idx + self.data_len - 1, 3]) / data[idx + self.data_len - 1, 3]
             data_y.append(change)
-        data_y = np.asarray(data_y)
+        data_y = np.asarray(data_y).reshape(-1, 1)
         return data_y
