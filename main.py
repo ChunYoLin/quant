@@ -8,9 +8,9 @@ from models import SimpleModel, RNNModel
 
 
 def main():
-    dataset = StockPriceRegression("AMD", "1993-01-01", data_len = 20)
+    dataset = StockPriceRegression("AMD", "1993-01-01", data_len = 20, scale="W")
     stock_list = ["AMD", "AAPL", "NVDA", "GOOG", "CDNS", "QCOM", "INTC", "MU"]
-    datasets = StockDataset(stock_list, "1993-01-01", data_len = 20)
+    datasets = StockDataset(stock_list, "1993-01-01", data_len = 20, scale="W")
     dataloader = data.DataLoader(datasets, batch_size=32, shuffle=True, drop_last=True)
 
     net = RNNModel().cuda()

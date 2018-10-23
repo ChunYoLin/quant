@@ -8,11 +8,11 @@ from fetcher import Fetcher
 
 
 class StockDataset(data.Dataset):
-    def __init__(self, symbols, start, end=date.today(), data_len=5):
+    def __init__(self, symbols, start, end=date.today(), data_len=5, scale="D"):
         assert isinstance(symbols, list)
         self.datasets = []
         for s in symbols:
-            stock_dataset = StockPriceRegression(s, start, end, data_len)
+            stock_dataset = StockPriceRegression(s, start, end, data_len, scale)
             self.datasets.append(stock_dataset)
         self.data_x = None
         self.data_y = None
@@ -38,9 +38,19 @@ def chunks(data, data_len):
 
 class StockPriceData():
 
-    def __init__(self, symbol, start, end=date.today(), data_len=5):
+    def __init__(self, symbol, start, end=date.today(), data_len=5, scale="D"):
         usecols = ["open", "high", "low", "close", "volume"]
         self.__data_df = Fetcher().fetch(symbol, start, end)[usecols]
+        if scale != "D":
+            self.__data_df = self.__data_df.resample(
+                    scale, 
+                    how=
+                    {"open": 'first',   
+                     "high": 'max',
+                     "low": 'min',
+                     "close": 'last',
+                     "volume": 'sum',
+                     })[:-1]
         self.__data_df_norm = self.__data_df.copy()
         self.__data_df_norm['open'] = MinMaxScaler().fit_transform(self.__data_df.open.values.reshape(-1, 1))
         self.__data_df_norm['high'] = MinMaxScaler().fit_transform(self.__data_df.high.values.reshape(-1, 1))
@@ -57,7 +67,7 @@ class StockPriceData():
         denorm_value = min_max_scaler.inverse_transform(norm_value)
         return denorm_value
 
-    def get_train_datas(self):
+    def get_train_datas(self, scale="D"):
         data = self.__data_df_norm.values
         data_x = np.array(list(chunks(data, self.data_len))[:-1])
         return data_x
@@ -79,8 +89,8 @@ class StockPriceData():
 
 class StockPriceRegression(StockPriceData):
 
-    def __init__(self, symbol, start, end=date.today(), data_len=5):
-        super().__init__(symbol, start, end, data_len)
+    def __init__(self, symbol, start, end=date.today(), data_len=5, scale="D"):
+        super().__init__(symbol, start, end, data_len, scale)
 
     def get_train_targets(self):
         data = self.get_norm_datas()
@@ -92,8 +102,8 @@ class StockPriceRegression(StockPriceData):
 
 
 class StockPriceChange(StockPriceData):
-    def __init__(self, symbol, start, end=date.today(), data_len=5):
-        super().__init__(symbol, start, end, data_len)
+    def __init__(self, symbol, start, end=date.today(), data_len=5, scale="D"):
+        super().__init__(symbol, start, end, data_len, scale)
 
     def get_train_targets(self):
         data = self.get_norm_datas()

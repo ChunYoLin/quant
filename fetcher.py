@@ -11,7 +11,7 @@ class Fetcher:
     def fetch(self, stock, start, end=date.today()):
         #TODO solve the trading day problem
         if type(end) == str:
-            end = date.fromisoformat(end)
+            end = datetime.strptime(end, '%Y-%m-%d').date()
         data = web.QuandlReader(stock, start, end, api_key="9rtGDsF3JKZLcWAxGbY5").read()
         data.rename(columns=lambda x: x.lower(), inplace=True)
         last_date_in_first_fetch = data.index[0].date()
