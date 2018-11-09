@@ -1,0 +1,3 @@
+[submodule "btgym"]
+	path = btgym
+	url = https://github.com/Kismuz/btgym.git
